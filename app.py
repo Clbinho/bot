@@ -3,13 +3,18 @@ import requests
 
 app = Flask(__name__)
 
-@app.route("/webhook", methods=["GET"])
+@app.route("/webhook", methods=["POST"])  # Alterado de GET para POST
 def receber_venda():
-    # Extrair dados dos parâmetros GET
-    produto = request.args.get("product", "Produto não especificado")
-    valor = request.args.get("amount", "Valor não especificado")
-    cliente = request.args.get("customer", "Cliente não especificado")
-    transaction_id = request.args.get("transaction_id", "ID de transação não especificado")
+    # Extrair dados do JSON enviado na requisição
+    dados = request.get_json()
+    
+    if not dados:
+        return "Nenhum dado recebido", 400  # Retorna erro caso o JSON esteja vazio
+    
+    produto = dados.get("product", "Produto não especificado")
+    valor = dados.get("amount", "Valor não especificado")
+    cliente = dados.get("customer", "Cliente não especificado")
+    transaction_id = dados.get("transaction_id", "ID de transação não especificado")
 
     mensagem = f"Nova venda!\nProduto: {produto}\nValor: {valor}\nCliente: {cliente}\nID Transação: {transaction_id}"
 
@@ -21,7 +26,10 @@ def receber_venda():
         "chat_id": chat_id,
         "text": mensagem
     }
-    requests.post(url, data=payload)  # Envia a requisição para o Telegram
+    response = requests.post(url, json=payload)  # Envia a requisição para o Telegram com JSON
+
+    if response.status_code != 200:
+        return f"Erro ao enviar mensagem para o Telegram: {response.text}", 500
 
     return "OK", 200  # Resposta para confirmar que a requisição foi recebida com sucesso
 
