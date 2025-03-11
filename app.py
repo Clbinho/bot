@@ -3,15 +3,15 @@ import requests
 
 app = Flask(__name__)
 
-@app.route("/webhook", methods=["POST"])
+@app.route("/webhook", methods=["GET"])
 def receber_venda():
-    data = request.json  # Pega os dados enviados no corpo da requisição
+    # Extrair dados dos parâmetros GET
+    produto = request.args.get("product", "Produto não especificado")
+    valor = request.args.get("amount", "Valor não especificado")
+    cliente = request.args.get("customer", "Cliente não especificado")
+    transaction_id = request.args.get("transaction_id", "ID de transação não especificado")
 
-    produto = data.get("produto", "Produto não especificado")
-    valor = data.get("valor", "Valor não especificado")
-    cliente = data.get("cliente", "Cliente não especificado")
-
-    mensagem = f"Nova venda!\nProduto: {produto}\nValor: {valor}\nCliente: {cliente}"
+    mensagem = f"Nova venda!\nProduto: {produto}\nValor: {valor}\nCliente: {cliente}\nID Transação: {transaction_id}"
 
     # Enviar mensagem para o Telegram
     token = "7791441080:AAHkT4qxRJT51740oiIbS4lYgu8bgGOuuN4"  # Seu token do bot do Telegram
@@ -27,4 +27,3 @@ def receber_venda():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=8080)
-
